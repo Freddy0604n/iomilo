@@ -14,7 +14,9 @@ fn main() {
                 _ => {}
             }
         } 
+        window.content[0].position.0 += 1;
         window.refresh_frame();
         ::std::thread::sleep(std::time::Duration::new(0, 1_000_000_000u32 / 60));
     }
+    println!("Active licence: {}", licence::check(185866116752));
 }

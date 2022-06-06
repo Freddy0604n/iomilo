@@ -18,8 +18,9 @@ impl UIWindow {
         let video_subsystem = sdl_context.video().unwrap();
 
         let window = video_subsystem
-            .window("demo", 100, 100)
+            .window("demo", 1000, 800)
             .position_centered()
+            .resizable()
             .build()
             .unwrap();
 
@@ -41,35 +42,41 @@ impl UIWindow {
     }
 
     pub fn refresh_frame(&mut self) {
+        let size: (u32, u32) = self.canvas.window().size();
         self.canvas.set_draw_color(BGCOLOR);
         self.canvas.clear();
         for module in self.content.iter() {
             match module.kind {
                 Modules::Rectangle => {
                     self.canvas.set_draw_color(Color::RGB(module.parameters[0] as u8, module.parameters[1] as u8, module.parameters[2] as u8));
-                    self.canvas.fill_rect(Rect::new(module.position.0 as i32, module.position.1 as i32, module.parameters[3] as u32, module.parameters[4] as u32)).unwrap();
+                    self.canvas.fill_rect(Rect::new(to_screen(module.position.0, size.0) as i32, to_screen(module.position.1, size.1) as i32, to_screen(module.parameters[3], size.0), to_screen(module.parameters[4], size.1))).unwrap();
                 }
             }
         }
         self.canvas.present();
     }
 }
+
 pub enum Modules {
-    Rectangle,  // parameters: [Red, Green, Blue, Width, Height]
+    Rectangle,  // parameters: [Red, Green, Blue, Width, Height] Width and height are in promilles of the width and height of the screen
 }
 
 pub struct Module {
     kind: Modules,
-    pub position: (u32, u32),
-    pub parameters: Vec<usize>
+    pub position: (u32, u32), // promilles
+    pub parameters: Vec<u32>
 }
 
 impl Module {
-    pub fn new(kind: Modules, position: (u32, u32), parameters: Vec<usize>) -> Module {
+    pub fn new(kind: Modules, position: (u32, u32), parameters: Vec<u32>) -> Module {
         Module {
             kind, 
             position,
             parameters
         }
     }
+}
+
+fn to_screen(promille: u32, full: u32) -> u32 {
+    (promille as f32 / 1000.0 * full as f32).round() as u32
 }
