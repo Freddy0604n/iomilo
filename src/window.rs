@@ -2,9 +2,9 @@ extern crate sdl2;
 
 pub use sdl2::{event::Event, keyboard::Keycode, pixels::Color, rect::Rect};
 
+const BGCOLOR: Color = Color::RGB(255, 255, 255);
+
 pub struct UIWindow {
-    pub width: u32,
-    pub height: u32,
     pub content: Vec<Module>,
     pub sdl_context: sdl2::Sdl,
     pub video_subsystem: sdl2::VideoSubsystem,
@@ -13,17 +13,18 @@ pub struct UIWindow {
 }
 
 impl UIWindow {
-    pub fn new(width: u32, height: u32) -> UIWindow {
+    pub fn new() -> UIWindow {
         let sdl_context = sdl2::init().unwrap();
         let video_subsystem = sdl_context.video().unwrap();
 
         let window = video_subsystem
-            .window("demo", width, height)
+            .window("demo", 100, 100)
             .position_centered()
             .build()
             .unwrap();
 
         let mut canvas = window.into_canvas().build().unwrap();
+        canvas.window_mut().maximize();
 
         canvas.set_draw_color(Color::RGB(255, 255, 255));
         canvas.clear();
@@ -31,8 +32,6 @@ impl UIWindow {
 
         let event_pump = sdl_context.event_pump().unwrap();
         UIWindow {
-            width,
-            height,
             content: Vec::new(),
             sdl_context,
             video_subsystem,
@@ -42,6 +41,8 @@ impl UIWindow {
     }
 
     pub fn refresh_frame(&mut self) {
+        self.canvas.set_draw_color(BGCOLOR);
+        self.canvas.clear();
         for module in self.content.iter() {
             match module.kind {
                 Modules::Rectangle => {
@@ -50,16 +51,17 @@ impl UIWindow {
                 }
             }
         }
+        self.canvas.present();
     }
 }
 pub enum Modules {
-    Rectangle,  // parameters position: [Red, Green, Blue, Widht, Height]
+    Rectangle,  // parameters: [Red, Green, Blue, Width, Height]
 }
 
 pub struct Module {
     kind: Modules,
-    position: (u32, u32),
-    parameters: Vec<usize>
+    pub position: (u32, u32),
+    pub parameters: Vec<usize>
 }
 
 impl Module {
