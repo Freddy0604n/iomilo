@@ -9,7 +9,7 @@ pub struct UIWindow {
     pub sdl_context: sdl2::Sdl,
     pub video_subsystem: sdl2::VideoSubsystem,
     pub canvas: sdl2::render::WindowCanvas,
-    pub event_pump: sdl2::EventPump
+    pub event_pump: sdl2::EventPump,
 }
 
 impl UIWindow {
@@ -37,7 +37,7 @@ impl UIWindow {
             sdl_context,
             video_subsystem,
             canvas,
-            event_pump
+            event_pump,
         }
     }
 
@@ -48,9 +48,21 @@ impl UIWindow {
         for module in self.content.iter() {
             match module.kind {
                 Modules::Rectangle => {
-                    self.canvas.set_draw_color(Color::RGB(module.parameters[0] as u8, module.parameters[1] as u8, module.parameters[2] as u8));
-                    self.canvas.fill_rect(Rect::new(to_screen(module.position.0, size.0) as i32, to_screen(module.position.1, size.1) as i32, to_screen(module.parameters[3], size.0), to_screen(module.parameters[4], size.1))).unwrap();
+                    self.canvas.set_draw_color(Color::RGB(
+                        module.parameters[0] as u8,
+                        module.parameters[1] as u8,
+                        module.parameters[2] as u8,
+                    ));
+                    self.canvas
+                        .fill_rect(Rect::new(
+                            to_screen(module.position.0, size.0) as i32,
+                            to_screen(module.position.1, size.1) as i32,
+                            to_screen(module.parameters[3], size.0),
+                            to_screen(module.parameters[4], size.1),
+                        ))
+                        .unwrap();
                 }
+                Modules::IWindow => {}
             }
         }
         self.canvas.present();
@@ -58,25 +70,32 @@ impl UIWindow {
 }
 
 pub enum Modules {
-    Rectangle,  // parameters: [Red, Green, Blue, Width, Height] Width and height are in promilles of the width and height of the screen
+    Rectangle, // parameters: [Red, Green, Blue, Width, Height] Width and height are in promilles of the width and height of the screen
+    IWindow,   // parameters: [BRed, BGreen, BBlue, Width, Height, HRed, HGreen, HBlue]
 }
 
 pub struct Module {
     kind: Modules,
     pub position: (u32, u32), // promilles
-    pub parameters: Vec<u32>
+    pub parameters: Vec<u32>,
+    children: Vec<Module>
 }
 
 impl Module {
     pub fn new(kind: Modules, position: (u32, u32), parameters: Vec<u32>) -> Module {
         Module {
-            kind, 
+            kind,
             position,
-            parameters
+            parameters,
+            children: Vec::new()
         }
+    }
+    pub fn add_child(&mut self, module: Module) {
+        self.children.push(module);
     }
 }
 
 fn to_screen(promille: u32, full: u32) -> u32 {
+    // calculates the value of a promille of the entire slice
     (promille as f32 / 1000.0 * full as f32).round() as u32
 }

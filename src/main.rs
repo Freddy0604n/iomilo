@@ -1,20 +1,24 @@
-mod window;
 mod licence;
+mod window;
 
 fn main() {
     let mut window = window::UIWindow::new();
-    window.content.push(window::Module::new(window::Modules::Rectangle, (0, 0), vec![0, 0, 0, 10, 10])); // should draw a black rectangle on the screen
+    window.content.push(window::Module::new(
+        window::Modules::Rectangle,
+        (0, 0),
+        vec![0, 0, 0, 10, 10],
+    )); // should draw a black rectangle on the screen
     'running: loop {
         for event in window.event_pump.poll_iter() {
             match event {
-                sdl2::event::Event::Quit {..} |
-                sdl2::event::Event::KeyDown { keycode: Some(sdl2::keyboard::Keycode::Escape), .. } => {
-                    break 'running
-                },
+                sdl2::event::Event::Quit { .. }
+                | sdl2::event::Event::KeyDown {
+                    keycode: Some(sdl2::keyboard::Keycode::Escape),
+                    ..
+                } => break 'running,
                 _ => {}
             }
-        } 
-        window.content[0].position.0 += 1;
+        }
         window.refresh_frame();
         ::std::thread::sleep(std::time::Duration::new(0, 1_000_000_000u32 / 60));
     }
