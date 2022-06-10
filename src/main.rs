@@ -1,4 +1,3 @@
-mod licence;
 mod window;
 
 fn main() {
@@ -18,5 +17,4 @@ fn main() {
             break 'running;
         }
     }
-    println!("Active licence: {}", licence::check(185866116752));
 }
